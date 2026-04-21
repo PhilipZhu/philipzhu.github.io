@@ -1,0 +1,213 @@
+---
+title: "Bayesian Updating: The Biased Coin"
+format: 
+  revealjs:
+    theme: default
+    transition: slide
+    fig-align: center
+    css: styles.css
+---
+
+## The Biased Coin
+
+:::: {.columns}
+::: {.column width="50%"}
+**The Setup**
+
+- You are given a coin with an unknown probability of rolling heads (<strong style="color:#00ff00;">Win</strong> or <strong style="color:#00ff00;">W</strong>).
+- Let $p$ be the chance of a <strong style="color:#00ff00;">W</strong>, and $1-p$ be the chance of a tails (<strong style="color:#ff3333;">Loss</strong> or <strong style="color:#ff3333;">L</strong>).
+
+:::
+::: {.column width="50%"}
+**The Goal**
+
+- We want to figure out the true value of $p$ based on our observations.
+- We will use **Bayes' Theorem** to update our beliefs.
+:::
+::::
+
+---
+
+## Batch vs Online Updating
+
+Imagine you roll 4 times and get: <img src="assets/coin_w.svg" style="height:35px; vertical-align:middle; margin:0 5px;"> <img src="assets/coin_l.svg" style="height:35px; vertical-align:middle; margin:0 5px;"> <img src="assets/coin_w.svg" style="height:35px; vertical-align:middle; margin:0 5px;"> <img src="assets/coin_w.svg" style="height:35px; vertical-align:middle; margin:0 5px;">
+
+::: {.fragment}
+<div style="font-size: 0.75em; margin-bottom: 10px;">
+**Method 1: Joint Distribution (Batch)** <br>
+$$Likelihood = p \cdot (1-p) \cdot p \cdot p \implies \color{blue}{Posterior} \propto p^3 (1-p) \cdot \color{gray}{Prior(p)}$$
+</div>
+:::
+
+::: {.fragment}
+<div style="font-size: 0.75em; margin-bottom: 10px;">
+**Method 2: Sequential (Online)**<br>
+$$\color{blue}{Posterior} \propto p \cdot (1-p) \cdot p \cdot p \cdot \color{gray}{Prior(p)}$$
+</div>
+:::
+
+::: {.fragment}
+<div style="font-size: 0.75em; margin-bottom: 10px;">
+Let's group the very first observation with the prior:<br>
+$$\color{blue}{Posterior} \propto p \cdot (1-p) \cdot p \cdot \underbrace{\left( p \cdot \color{gray}{Prior(p)} \right)}_{\text{New Prior!}}$$
+</div>
+:::
+
+::: {.fragment}
+<div style="font-size: 0.75em; margin-top: 15px; padding: 2px 10px; background: rgba(0,0,0,0.1); border-left: 4px solid blue;">
+**Takeaway:** You use your previous <span style="color:blue; font-weight:bold;">Posterior</span> as your *new* <span style="color:gray; font-weight:bold;">Prior</span>! Order of data does not matter.
+</div>
+:::
+
+---
+
+## Interactive: Bayesian Updating
+*Draw your own prior density on the graph, set the true $p$, and watch the posterior update organically!*
+
+```{=html}
+<div class="sim-controls" style="display:flex; justify-content:center; gap:15px; margin-bottom: 5px; align-items:center; flex-wrap:wrap;">
+   <label for="true-p-slider">True <b>p</b> (for W): <span id="true-p-val">0.70</span></label>
+   <input type="range" id="true-p-slider" min="0" max="1" step="0.01" value="0.70" style="vertical-align:middle; width:120px;">
+   <button id="bc-play" class="btn">Play / Pause</button>
+   <button id="bc-step" class="btn">Roll Once</button>
+   <button id="bc-reset" class="btn" style="background-color: #d9534f;">Reset</button>
+   <div style="font-size:0.9em; margin-left: 10px;">Speed: <input type="range" id="bc-speed" min="50" max="1000" value="300" style="vertical-align:middle; width:80px; direction: rtl;"></div>
+</div>
+
+<div style="text-align: center; font-size: 1.2em; font-weight: bold; margin-bottom: 5px; min-height: 1.5em; color: #ffcc00;" id="bc-status">
+   Rolls: 0 | Wins: 0 | Losses: 0
+</div>
+
+<div style="display:flex; justify-content:center; align-items: center; flex-direction: column;">
+   <canvas id="bc-canvas" width="800" height="280" style="max-width:100%; height:auto; border:2px solid #555; border-radius:8px; cursor: crosshair; background-color: #141414;"></canvas>
+   <div style="display:flex; justify-content:space-between; width: 800px; max-width: 100%; font-size: 0.8em; color: #aaa; margin-top: 5px;">
+       <span>p = 0.0 (All Losses)</span>
+       <span>p = 0.5 (Fair Coin)</span>
+       <span>p = 1.0 (All Wins)</span>
+   </div>
+   <div style="font-size: 0.8em; color: #888; margin-top: 10px;">
+       <strong>Hint:</strong> Click and drag on the plot area to draw a custom Prior distribution.
+   </div>
+</div>
+
+<script src="bayesian_coin.js"></script>
+```
+
+---
+
+## 2D Bayesian: Human Heights
+Assume human heights follow a normal distribution $y \sim N(\mu, \sigma^2)$. But both $\mu$ and $\sigma$ are **unknown**!
+
+:::: {.columns style="font-size: 0.8em;"}
+
+::: {.column width="50%"}
+**1. The 2D Parameter Grid**
+We evaluate over a 100x60 grid:
+- Mean $\mu \in [130, 230]$ cm
+- Spread $\sigma \in [1, 60]$ cm
+
+**2. The Initial Prior**
+We set an initial independent prior:
+- $\mu \sim N(178, 20^2)$
+- $\sigma \sim \text{Exp} (\lambda = 1/50)$
+:::
+
+::: {.column width="50%"}
+**3. The Likelihood**
+Given a height $y_i$, the likelihood of any grid cell is:
+$$L(y_i | \mu, \sigma) = \frac{1}{\sigma\sqrt{2\pi}} e^{-\frac{(y_i - \mu)^2}{2\sigma^2}}$$
+
+**4. The Bayesian Update** 
+$$Post(\mu, \sigma) \propto Likelihood \times Prior(\mu, \sigma)$$
+:::
+
+::::
+
+---
+
+## Interactive: 2D Posterior & Predictive
+
+```{=html}
+<div class="sim-controls" style="display:flex; justify-content:center; gap:15px; align-items:center; flex-wrap:wrap; font-size: 0.8em;">
+    <div>
+       <label for="b2-data-mode"><b>Data Mode:</b></label>
+       <select id="b2-data-mode">
+          <option value="normal">Normal (Single)</option>
+          <option value="bimodal">Bimodal (Two Peaks)</option>
+       </select>
+    </div>
+    <div id="b2-normal-params" style="display:flex; gap:10px; align-items:center;">
+       <div>
+           <label>\(\mu_1\): <span id="b2-u1-val">160</span></label><br>
+           <input type="range" id="b2-u1-slider" min="140" max="220" step="1" value="160" style="width:70px;">
+       </div>
+       <div>
+           <label>\(\sigma_1\): <span id="b2-s1-val">20</span></label><br>
+           <input type="range" id="b2-s1-slider" min="1" max="50" step="1" value="20" style="width:70px;">
+       </div>
+    </div>
+    <div id="b2-bimodal-params" style="display:none; gap:10px; align-items:center; border-left:1px solid #777; padding-left:10px;">
+       <div>
+           <label>\(\mu_2\): <span id="b2-u2-val">210</span></label><br>
+           <input type="range" id="b2-u2-slider" min="140" max="220" step="1" value="210" style="width:70px;">
+       </div>
+       <div>
+           <label>\(\sigma_2\): <span id="b2-s2-val">15</span></label><br>
+           <input type="range" id="b2-s2-slider" min="1" max="50" step="1" value="15" style="width:70px;">
+       </div>
+    </div>
+    
+    <div style="display:flex; gap:5px; margin-left:10px; align-items:center;">
+        <button id="b2-play" class="btn">Auto Train</button>
+        <button id="b2-step" class="btn">Train One Step</button>
+        <button id="b2-sample" class="btn" style="background-color: #5bc0de;">Sample Posterior</button>
+        <button id="b2-reset" class="btn" style="background-color: #d9534f;">Reset</button>
+    </div>
+</div>
+
+<div style="text-align: center; font-size: 1.1em; font-weight: bold; margin-bottom: 5px; color: #ffcc00;" id="b2-status">
+   Data Points (N): 0
+</div>
+
+<div style="display:flex; justify-content:center; gap:20px; align-items: stretch; margin-top:5px; flex-wrap: wrap;">
+    <div style="display:flex; flex-direction:column; align-items:center;">
+        <h4 style="margin:0 0 5px 0;">Posterior \( P(\mu, \sigma) \)</h4>
+        <canvas id="b2-post-canvas" width="400" height="300" style="border:2px solid #555; border-radius:8px; background-color: #1a1a1a;"></canvas>
+    </div>
+    
+    <div style="display:flex; flex-direction:column; align-items:center;">
+        <h4 style="margin:0 0 5px 0;">Data vs Post. Predictive</h4>
+        <canvas id="b2-data-canvas" width="400" height="300" style="border:2px solid #555; border-radius:8px; background-color: #1a1a1a;"></canvas>
+    </div>
+</div>
+
+<script src="bayesian_2d.js"></script>
+```
+
+---
+
+## Colinearity in Linear Models
+
+**Model**: $\text{Y} = \beta_1 x_1 + \beta_2 x_2$ (where $x_1$ and $x_2$ are highly correlated).
+
+```{=html}
+<div style="display:flex; justify-content:center; gap:15px; align-items: flex-start; margin-top:15px; flex-wrap: nowrap; overflow:visible;">
+    <div style="display:flex; flex-direction:column; align-items:center;">
+        <h4 style="margin:0 0 10px 0; font-size: 1.1em; white-space:nowrap;">Prior \( P(\beta_1, \beta_2) \)</h4>
+        <canvas id="b3-prior-canvas" width="280" height="280" style="border:2px solid #555; border-radius:8px; background-color: #1a1a1a; cursor:crosshair;"></canvas>
+        <div style="font-size: 0.85em; color: #aaa; margin-top: 5px;"><i>double-click to reset</i></div>
+    </div>
+    
+    <div style="display:flex; flex-direction:column; align-items:center;">
+        <h4 style="margin:0 0 10px 0; font-size: 1.1em; white-space:nowrap;">Likelihood</h4>
+        <canvas id="b3-like-canvas" width="280" height="280" style="border:2px solid #555; border-radius:8px; background-color: white;"></canvas>
+    </div>
+    
+    <div style="display:flex; flex-direction:column; align-items:center;">
+        <h4 style="margin:0 0 10px 0; font-size: 1.1em; white-space:nowrap;">Posterior \( P(\beta|Y,X) \)</h4>
+        <canvas id="b3-post-canvas" width="280" height="280" style="border:2px solid #555; border-radius:8px; background-color: #1a1a1a;"></canvas>
+    </div>
+</div>
+
+<script src="bayesian_colinear.js"></script>
+```
